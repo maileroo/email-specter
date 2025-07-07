@@ -90,5 +90,6 @@ If you need any help or have a question, please open an issue.
 
 ## License
 
-This project is licensed under the MIT License.
-You are free to use, modify, and distribute this software with proper attribution. See [LICENSE](https://github.com/maileroo/email-specter/blob/main/LICENSE) for full details.
+This project is licensed under the MIT License, except where otherwise noted.
+
+Some files, as listed in the NOTICE file, are subject to the European Union Public License (EUPL) v1.2. These files remain under the EUPL, including any modifications made to them.
