@@ -287,7 +287,7 @@ export default function Content() {
                                     type="button"
                                     role="tab"
                                 >
-                                    <i className="bi bi-table me-2"></i>
+                                    <i className="fa fa-table me-2"></i>
                                     Table View
                                 </button>
                             </li>
@@ -299,7 +299,7 @@ export default function Content() {
                                     type="button"
                                     role="tab"
                                 >
-                                    <i className="bi bi-graph-up me-2"></i>
+                                    <i className="fa fa-chart-line me-2"></i>
                                     Line Chart
                                 </button>
                             </li>

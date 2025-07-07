@@ -107,33 +107,48 @@ export default function Content() {
         const emailSpecterData = reportData.data.filter(item => item.classification_type === 'email_specter_classification');
         const kumoMtaData = reportData.data.filter(item => item.classification_type === 'kumo_mta_classification');
 
+        const labels = [];
+        const emailSpecterCounts = [];
+        const kumoMtaCounts = [];
+
+        const allClassifications = [...new Set(reportData.data.map(item => item.classification))];
+
+        allClassifications.forEach(classification => {
+
+            labels.push(classification);
+            
+            const emailSpecterItem = emailSpecterData.find(item => item.classification === classification);
+            const kumoMtaItem = kumoMtaData.find(item => item.classification === classification);
+            
+            emailSpecterCounts.push(emailSpecterItem ? emailSpecterItem.count : 0);
+            kumoMtaCounts.push(kumoMtaItem ? kumoMtaItem.count : 0);
+
+        });
+
         const datasets = [];
         
         if (emailSpecterData.length > 0) {
 
             datasets.push({
                 label: 'Email Specter Classifications',
-                data: emailSpecterData.map(item => item.count),
+                data: emailSpecterCounts,
                 backgroundColor: 'rgba(54, 162, 235, 0.8)',
                 borderColor: 'rgba(54, 162, 235, 1)',
                 borderWidth: 1
             });
-
         }
 
         if (kumoMtaData.length > 0) {
 
             datasets.push({
                 label: 'Kumo MTA Classifications',
-                data: kumoMtaData.map(item => item.count),
+                data: kumoMtaCounts,
                 backgroundColor: 'rgba(255, 99, 132, 0.8)',
                 borderColor: 'rgba(255, 99, 132, 1)',
                 borderWidth: 1
             });
 
         }
-
-        const labels = reportData.data.map(item => item.classification);
 
         return {
             labels: labels,
@@ -323,7 +338,7 @@ export default function Content() {
                                     type="button"
                                     role="tab"
                                 >
-                                    <i className="bi bi-table me-2"></i>
+                                    <i className="fa fa-table me-2"></i>
                                     Table View
                                 </button>
                             </li>
@@ -335,8 +350,8 @@ export default function Content() {
                                     type="button"
                                     role="tab"
                                 >
-                                    <i className="bi bi-graph-up me-2"></i>
-                                    Line Chart
+                                    <i className="fa fa-chart-bar me-2"></i>
+                                    Bar Chart
                                 </button>
                             </li>
 
