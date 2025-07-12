@@ -234,5 +234,13 @@
   {
     "regex": "(^|\\.)mx.cloudflare\\.net",
     "name": "Cloudflare Email Routing"
+  },
+  {
+    "regex": "(^|\\.)posteo\\.de",
+    "name": "Posteo"
+  },
+  {
+    "regex": "(^|\\.)messagingengine\\.com",
+    "name": "FastMail"
   }
 ]
