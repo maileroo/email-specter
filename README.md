@@ -51,7 +51,7 @@ After the playbook is complete, you can access Email Specter at <em>http://{{ pu
 If you are looking to setup Email Specter manually, you can follow the steps below:
 
 1. Install the required dependencies: 
-   1. MongoDB 8.0
+   1. MongoDB 4.0 or above
    2. Node.js 22
    3. Go 1.24
 2. Clone the GitHub repository
