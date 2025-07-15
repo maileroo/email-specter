@@ -2,7 +2,6 @@ package webhook
 
 import (
 	"email-specter/model"
-	"github.com/gofiber/fiber/v2/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -34,8 +33,6 @@ func handleReceptionEvent(mtaId primitive.ObjectID, webhookData model.WebhookEve
 
 	go upsertAggregatedEvent(mtaId, message, currentTime)
 
-	log.Infof("Webhook Reception Event: %s - %s", message.ID.Hex(), webhookData.Response.Content)
-
 	return true
 
 }
@@ -58,8 +55,6 @@ func handleBounceEvent(mtaId primitive.ObjectID, webhookData model.WebhookEvent)
 	if err != nil {
 		return false
 	}
-
-	log.Infof("Webhook Bounce Event: %s - %s", message.ID.Hex(), webhookData.Response.Content)
 
 	return updateMessageStatus(webhookData, message, event, webhookData.Type, currentTime)
 
@@ -85,8 +80,6 @@ func handleTransientFailureEvent(mtaId primitive.ObjectID, webhookData model.Web
 		return false
 	}
 
-	log.Infof("Webhook Transient Failure Event: %s - %s", message.ID.Hex(), webhookData.Response.Content)
-
 	return updateMessageStatus(webhookData, message, event, webhookData.Type, currentTime)
 
 }
@@ -108,8 +101,6 @@ func handleDeliveryEvent(mtaId primitive.ObjectID, webhookData model.WebhookEven
 	if err != nil {
 		return false
 	}
-
-	log.Infof("Webhook Delivery Event: %s - %s", message.ID.Hex(), webhookData.Response.Content)
 
 	return updateMessageStatus(webhookData, message, event, webhookData.Type, currentTime)
 
