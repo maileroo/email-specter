@@ -12,7 +12,6 @@ import (
 	"email-specter/web/webhook"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"log"
 	"os"
 	"os/signal"
@@ -28,8 +27,6 @@ func runWebserver(shutdownCtx context.Context) {
 		Prefork:   false,
 		BodyLimit: maxBodySize,
 	})
-
-	app.Use(logger.New())
 
 	// CORS Middleware
 

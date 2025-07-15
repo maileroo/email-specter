@@ -46,7 +46,7 @@ export default function Content() {
             destination_domain: filters.destinationDomain || "",
             last_status: filters.lastStatus || "",
             email_specter_bounce_classification: filters.emailSpecterBounceClassification || "",
-            kumo_mta_classifications: filters.kumoMtaBounceClassification || "",
+            kumo_mta_bounce_classification: filters.kumoMtaBounceClassification || "",
             page: filters.page || 1,
         };
 
@@ -306,7 +306,7 @@ function MessageTables({messages}) {
                 <br/>
 
                 <span className="font-medium">
-                    <label className={`badge bg-dark`}>{rowData['kumo_mta_classifications'] || 'N/A'}</label>
+                    <label className={`badge bg-dark`}>{rowData['kumo_mta_classification'] || 'N/A'}</label>
                 </span>
 
             </div>
