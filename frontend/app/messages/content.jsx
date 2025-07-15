@@ -306,7 +306,7 @@ function MessageTables({messages}) {
                 <br/>
 
                 <span className="font-medium">
-                    <label className={`badge bg-dark`}>{rowData['kumo_mta_classification'] || 'N/A'}</label>
+                    <label className={`badge bg-dark`}>{rowData['kumo_mta_bounce_classification'] || 'N/A'}</label>
                 </span>
 
             </div>
