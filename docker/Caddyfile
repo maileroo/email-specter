@@ -1,4 +1,4 @@
-{$DOMAIN:localhost} {
+http://{$DOMAIN:localhost} {
     # API routes to backend
     handle /api/* {
         reverse_proxy backend:8989
