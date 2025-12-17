@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:webpack": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -12,15 +13,16 @@
     "axios": "^1.10.0",
     "bootstrap": "^5.3.7",
     "chart.js": "^4.5.0",
-    "next": "15.3.4",
-    "primereact": "^10.9.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "next": "^15.5.9",
+    "primereact": "^10.9.7",
+    "primeicons": "^7.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "react-hot-toast": "^2.5.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "eslint": "^9",
-    "eslint-config-next": "15.3.4"
+    "eslint-config-next": "^15.5.9"
   }
 }
