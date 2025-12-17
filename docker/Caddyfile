@@ -1,5 +1,5 @@
-# Snippet for proxy rules (reusable)
-(proxy_rules) {
+# HTTP - always available on port 80, any hostname
+:80 {
     handle /api/* {
         reverse_proxy backend:8989
     }
@@ -11,12 +11,17 @@
     }
 }
 
-# HTTP fallback - always available for any hostname
-:80 {
-    import proxy_rules
-}
-
-# HTTPS with auto SSL - only active if DOMAIN is set to a real FQDN
-{$DOMAIN:} {
-    import proxy_rules
-}
+# === HTTPS SETUP ===
+# To enable HTTPS, uncomment below and replace example.com with your domain:
+#
+# example.com {
+#     handle /api/* {
+#         reverse_proxy backend:8989
+#     }
+#     handle /webhook* {
+#         reverse_proxy backend:8989
+#     }
+#     handle {
+#         reverse_proxy frontend:3000
+#     }
+# }
