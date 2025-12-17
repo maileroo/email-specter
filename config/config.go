@@ -2,9 +2,10 @@ package config
 
 import (
 	"email-specter/util"
-	"github.com/joho/godotenv"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 var MongoConnStr string
@@ -23,12 +24,7 @@ var TopEntitiesCacheDuration time.Duration
 
 func loadConfig() {
 
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		panic("Error loading .env file: " + err.Error())
-		return
-	}
+	_ = godotenv.Load(".env")
 
 	MongoConnStr = os.Getenv("MONGO_CONN_STR")
 	MongoDb = os.Getenv("MONGO_DB")
@@ -52,9 +48,7 @@ func getCorrectedBackendUrl(url string) string {
 		return findBackendUrl()
 	}
 
-	url = addSlashIfNeeded(url)
-
-	return url
+	return addSlashIfNeeded(url)
 
 }
 

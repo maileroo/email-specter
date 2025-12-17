@@ -1,0 +1,16 @@
+{$DOMAIN:localhost} {
+    # API routes to backend
+    handle /api/* {
+        reverse_proxy backend:8989
+    }
+
+    # Webhook endpoint to backend
+    handle /webhook* {
+        reverse_proxy backend:8989
+    }
+
+    # Everything else to frontend
+    handle {
+        reverse_proxy frontend:3000
+    }
+}

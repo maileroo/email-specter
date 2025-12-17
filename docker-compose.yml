@@ -1,0 +1,75 @@
+services:
+  mongodb:
+    image: mongo:8.0
+    container_name: email-specter-mongo
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - email-specter-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: email-specter-backend
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      - MONGO_CONN_STR=mongodb://mongodb:27017
+      - MONGO_DB=${MONGO_DB:-email-specter}
+      - BACKEND_URL=${BACKEND_URL:-https://${DOMAIN:-localhost}/}
+      - LISTEN_ADDRESS=0.0.0.0
+      - HTTP_PORT=8989
+      - LOG_RETENTION_PERIOD=${LOG_RETENTION_PERIOD:-30d}
+      - DATA_RETENTION_PERIOD=${DATA_RETENTION_PERIOD:-365d}
+      - SESSION_LENGTH=${SESSION_LENGTH:-24h}
+      - TOP_ENTITIES_CACHE_DURATION=${TOP_ENTITIES_CACHE_DURATION:-5m}
+    networks:
+      - email-specter-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    container_name: email-specter-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - email-specter-network
+
+  caddy:
+    image: caddy:alpine
+    container_name: email-specter-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - email-specter-network
+
+volumes:
+  mongodb_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  email-specter-network:
+    driver: bridge
