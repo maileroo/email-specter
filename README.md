@@ -60,7 +60,7 @@ If you are looking to setup Email Specter manually, you can follow the steps bel
 5. Go to `frontend` directory and run `npm install` to install the frontend dependencies.
 6. Run `npm run build` to build the frontend.
 7. Run `npm run start` to start the frontend server.
-8. Go to `backend` directory and run `go build .` to build the backend executable.
+8. Go to the base directory and run `go build .` to build the backend executable.
 9. Run `./email-specter` to start the backend server.
 
 ## Usage
