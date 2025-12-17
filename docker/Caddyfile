@@ -1,16 +1,22 @@
-http://{$DOMAIN:localhost} {
-    # API routes to backend
+# Snippet for proxy rules (reusable)
+(proxy_rules) {
     handle /api/* {
         reverse_proxy backend:8989
     }
-
-    # Webhook endpoint to backend
     handle /webhook* {
         reverse_proxy backend:8989
     }
-
-    # Everything else to frontend
     handle {
         reverse_proxy frontend:3000
     }
+}
+
+# HTTP fallback - always available for any hostname
+:80 {
+    import proxy_rules
+}
+
+# HTTPS with auto SSL - only active if DOMAIN is set to a real FQDN
+{$DOMAIN:} {
+    import proxy_rules
 }
