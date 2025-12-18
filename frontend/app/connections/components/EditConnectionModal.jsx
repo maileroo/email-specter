@@ -38,8 +38,8 @@ export default function EditConnectionModal({show, mta, onClose, onSubmit}) {
     if (!show || !mta) return null;
 
     return (
-        <div className="modal show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-            <div className="modal-dialog">
+        <div className="modal show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(0,0,0,0.5)'}} onClick={handleClose}>
+            <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-content">
                     <div className="modal-header">
                         <h5 className="modal-title">Edit Connection</h5>

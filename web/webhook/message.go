@@ -13,7 +13,8 @@ import (
 
 func updateMessageStatus(webhookData model.WebhookEvent, message *model.Message, event model.Event, status string, currentTime time.Time) bool {
 
-	// Prepend Reception events to ensure they're always first
+	// Reception events should be prepended
+
 	if event.Type == "Reception" {
 		message.Events = append([]model.Event{event}, message.Events...)
 	} else {
@@ -40,13 +41,13 @@ func updateMessageStatus(webhookData model.WebhookEvent, message *model.Message,
 
 	}
 
-	// Only overwrite if new value is not empty (Reception events don't have these)
 	newDestService := getServiceName(webhookData.PeerAddress.Name, message.DestinationDomain)
 	newSourceIP := getIPAddress(webhookData.SourceAddress.Address)
 
 	if newDestService != "Unknown" || message.DestinationService == "" {
 		message.DestinationService = newDestService
 	}
+
 	if newSourceIP != "" {
 		message.SourceIP = newSourceIP
 	}
@@ -59,6 +60,7 @@ func updateMessageStatus(webhookData model.WebhookEvent, message *model.Message,
 	}
 
 	go upsertAggregatedEvent(message.MtaId, message, currentTime)
+
 	return true
 
 }
