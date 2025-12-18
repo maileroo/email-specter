@@ -25,7 +25,6 @@ services:
     environment:
       - MONGO_CONN_STR=mongodb://mongodb:27017
       - MONGO_DB=${MONGO_DB:-email-specter}
-      - BACKEND_URL=${BACKEND_URL:-http://localhost/}
       - LISTEN_ADDRESS=0.0.0.0
       - HTTP_PORT=8989
       - LOG_RETENTION_PERIOD=${LOG_RETENTION_PERIOD:-30d}

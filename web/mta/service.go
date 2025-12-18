@@ -2,16 +2,16 @@ package mta
 
 import (
 	"context"
-	"email-specter/config"
 	"email-specter/database"
 	"email-specter/model"
 	"email-specter/util"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const secretTokenLength = 64
 
-func getAllMTAs() map[string]interface{} {
+func getAllMTAs(baseUrl string) map[string]interface{} {
 
 	collection := database.MongoConn.Collection("mtas")
 
@@ -43,7 +43,7 @@ func getAllMTAs() map[string]interface{} {
 			ID:            mta.ID,
 			Name:          mta.Name,
 			SecretToken:   mta.SecretToken,
-			CollectionUrl: config.BackendUrl + "api/webhook/" + mta.ID.Hex() + "/" + mta.SecretToken,
+			CollectionUrl: baseUrl + "api/batch-webhook/" + mta.ID.Hex() + "/" + mta.SecretToken,
 		}
 
 	}
@@ -55,7 +55,7 @@ func getAllMTAs() map[string]interface{} {
 
 }
 
-func addMTA(name string) map[string]interface{} {
+func addMTA(name string, baseUrl string) map[string]interface{} {
 
 	secretToken, err := util.GenerateRandomString(secretTokenLength / 2)
 
@@ -73,7 +73,7 @@ func addMTA(name string) map[string]interface{} {
 		ID:            id,
 		Name:          name,
 		SecretToken:   secretToken,
-		CollectionUrl: config.BackendUrl + "api/webhook/" + id.Hex() + "/" + secretToken,
+		CollectionUrl: baseUrl + "api/batch-webhook/" + id.Hex() + "/" + secretToken,
 	}
 
 	collection := database.MongoConn.Collection("mtas")

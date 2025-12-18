@@ -3,16 +3,29 @@ package webhook
 import (
 	"email-specter/model"
 	"errors"
+	"log"
+
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"time"
 )
 
 func updateMessageStatus(webhookData model.WebhookEvent, message *model.Message, event model.Event, status string, currentTime time.Time) bool {
 
-	message.Events = append(message.Events, event)
+	// Prepend Reception events to ensure they're always first
+	if event.Type == "Reception" {
+		message.Events = append([]model.Event{event}, message.Events...)
+	} else {
+		message.Events = append(message.Events, event)
+	}
 
-	message.LastStatus = status
+	isFinalStatus := message.LastStatus == "Delivery" || message.LastStatus == "Bounce" || message.LastStatus == "TransientFailure"
+
+	if !(status == "Reception" && isFinalStatus) {
+		message.LastStatus = status
+	}
+
 	message.UpdatedAt = currentTime
 
 	if status == "Bounce" || status == "TransientFailure" {
@@ -27,18 +40,26 @@ func updateMessageStatus(webhookData model.WebhookEvent, message *model.Message,
 
 	}
 
-	// Good to overwrite it because the destination service, source IP cannot be determined at the time of reception
+	// Only overwrite if new value is not empty (Reception events don't have these)
+	newDestService := getServiceName(webhookData.PeerAddress.Name, message.DestinationDomain)
+	newSourceIP := getIPAddress(webhookData.SourceAddress.Address)
 
-	message.DestinationService = getServiceName(webhookData.PeerAddress.Name, message.DestinationDomain)
-	message.SourceIP = getIPAddress(webhookData.SourceAddress.Address)
-
-	result := message.Save() == nil
-
-	if result {
-		go upsertAggregatedEvent(message.MtaId, message, currentTime)
+	if newDestService != "Unknown" || message.DestinationService == "" {
+		message.DestinationService = newDestService
+	}
+	if newSourceIP != "" {
+		message.SourceIP = newSourceIP
 	}
 
-	return result
+	err := message.Save()
+
+	if err != nil {
+		log.Printf("[Message] FAILED to save: KumoID=%s, Error=%v", message.KumoMtaID, err)
+		return false
+	}
+
+	go upsertAggregatedEvent(message.MtaId, message, currentTime)
+	return true
 
 }
 
@@ -53,6 +74,18 @@ func getOrCreateMessage(mtaId primitive.ObjectID, webhookData model.WebhookEvent
 			message = createMessageObject(mtaId, currentTime, webhookData)
 
 			if err := message.Insert(); err != nil {
+				// Race condition: another goroutine inserted it first
+				// Retry the lookup
+				if mongo.IsDuplicateKeyError(err) {
+					log.Printf("[Message] Duplicate key (race condition), retrying lookup: KumoID=%s", webhookData.ID)
+					message, err = model.GetMessageByKumoMtaID(webhookData.ID)
+					if err != nil {
+						log.Printf("[Message] FAILED retry lookup: KumoID=%s, Error=%v", webhookData.ID, err)
+						return nil, err
+					}
+					return message, nil
+				}
+				log.Printf("[Message] FAILED to insert new: KumoID=%s, Error=%v", webhookData.ID, err)
 				return nil, err
 			}
 
@@ -60,6 +93,7 @@ func getOrCreateMessage(mtaId primitive.ObjectID, webhookData model.WebhookEvent
 
 		}
 
+		log.Printf("[Message] DB error looking up: KumoID=%s, Error=%v", webhookData.ID, err)
 		return nil, err
 
 	}
