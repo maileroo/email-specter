@@ -12,15 +12,64 @@ export default function ConnectionCard({mta, onEdit, onDelete, onRotateToken}) {
 
     const getConfigurationCode = (collectionUrl) => {
 
-        return `local log_hooks = require 'policy-extras.log_hooks'\n` +
-            `\n` +
-            `log_hooks:new_json {\n` +
-            `    name = 'email_specter',\n` +
-            `    url = '${collectionUrl}',\n` +
-            `    log_parameters = {\n` +
-            `        headers = { 'Message-ID', 'From', 'To', 'Subject' },\n` +
-            `    },\n` +
-            `}`;
+        return `local log_hooks = require 'policy-extras.log_hooks'
+
+log_hooks:new {
+  name = 'email_specter',
+  batch_size = 100,
+  log_parameters = {
+    headers = { 'From', 'Subject', 'Message-ID', 'To' },
+  },
+  queue_config = {
+    retry_interval = '1m',
+    max_retry_interval = '20m',
+  },
+  constructor = function(domain, tenant, campaign)
+  
+    local connection = {}
+    local client = kumo.http.build_client {}
+
+    function connection:send_batch(messages)
+\t
+      local url = '${collectionUrl}'
+      local payloads = {}
+\t  
+      for i = 1, #messages do
+        local data = messages[i]:get_data()
+        if data and #data > 0 then table.insert(payloads, data) end
+      end
+\t  
+      local body = '[' .. table.concat(payloads, ',') .. ']'
+
+      local response = client
+        :post(url)
+        :header('Content-Type', 'application/json')
+        :header('User-Agent', 'Webhook/1.0')
+        :body(body)
+        :send()
+
+      local status_code = response:status_code()
+      local status_reason = response:status_reason()
+      local response_text = response:text()
+      local disposition = string.format('%d %s: %s', status_code, status_reason, response_text)
+\t  
+      if response:status_is_success() then
+        return disposition
+      else
+        kumo.log_warn(string.format('[Email Specter]: %s', disposition))
+      end
+
+      kumo.reject(500, disposition)
+\t  
+    end
+
+    function connection:close()
+      client:close()
+    end
+
+    return connection
+  end,
+}`;
 
     };
 

@@ -3,16 +3,30 @@ package webhook
 import (
 	"email-specter/model"
 	"errors"
+	"log"
+
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"time"
 )
 
 func updateMessageStatus(webhookData model.WebhookEvent, message *model.Message, event model.Event, status string, currentTime time.Time) bool {
 
-	message.Events = append(message.Events, event)
+	// Reception events should be prepended
 
-	message.LastStatus = status
+	if event.Type == "Reception" {
+		message.Events = append([]model.Event{event}, message.Events...)
+	} else {
+		message.Events = append(message.Events, event)
+	}
+
+	isFinalStatus := message.LastStatus == "Delivery" || message.LastStatus == "Bounce" || message.LastStatus == "TransientFailure"
+
+	if !(status == "Reception" && isFinalStatus) {
+		message.LastStatus = status
+	}
+
 	message.UpdatedAt = currentTime
 
 	if status == "Bounce" || status == "TransientFailure" {
@@ -27,18 +41,40 @@ func updateMessageStatus(webhookData model.WebhookEvent, message *model.Message,
 
 	}
 
-	// Good to overwrite it because the destination service, source IP cannot be determined at the time of reception
+	newDestService := getServiceName(webhookData.PeerAddress.Name, message.DestinationDomain)
+	newSourceIP := getIPAddress(webhookData.SourceAddress.Address)
 
-	message.DestinationService = getServiceName(webhookData.PeerAddress.Name, message.DestinationDomain)
-	message.SourceIP = getIPAddress(webhookData.SourceAddress.Address)
+	if newDestService != "Unknown" || message.DestinationService == "" {
+		message.DestinationService = newDestService
+	}
 
-	result := message.Save() == nil
+	if newSourceIP != "" {
+		message.SourceIP = newSourceIP
+	}
 
-	if result {
+	err := message.Save()
+
+	if err != nil {
+		log.Printf("[Message] FAILED to save: KumoID=%s, Error=%v", message.KumoMtaID, err)
+		return false
+	}
+
+	// Only count TransientFailure once per message (not per retry)
+	shouldAggregate := true
+	if status == "TransientFailure" {
+		for _, e := range message.Events {
+			if e.Type == "TransientFailure" && e.Datetime != event.Datetime {
+				shouldAggregate = false
+				break
+			}
+		}
+	}
+
+	if shouldAggregate {
 		go upsertAggregatedEvent(message.MtaId, message, currentTime)
 	}
 
-	return result
+	return true
 
 }
 
@@ -53,6 +89,18 @@ func getOrCreateMessage(mtaId primitive.ObjectID, webhookData model.WebhookEvent
 			message = createMessageObject(mtaId, currentTime, webhookData)
 
 			if err := message.Insert(); err != nil {
+				// Race condition: another goroutine inserted it first
+				// Retry the lookup
+				if mongo.IsDuplicateKeyError(err) {
+					log.Printf("[Message] Duplicate key (race condition), retrying lookup: KumoID=%s", webhookData.ID)
+					message, err = model.GetMessageByKumoMtaID(webhookData.ID)
+					if err != nil {
+						log.Printf("[Message] FAILED retry lookup: KumoID=%s, Error=%v", webhookData.ID, err)
+						return nil, err
+					}
+					return message, nil
+				}
+				log.Printf("[Message] FAILED to insert new: KumoID=%s, Error=%v", webhookData.ID, err)
 				return nil, err
 			}
 
@@ -60,6 +108,7 @@ func getOrCreateMessage(mtaId primitive.ObjectID, webhookData model.WebhookEvent
 
 		}
 
+		log.Printf("[Message] DB error looking up: KumoID=%s, Error=%v", webhookData.ID, err)
 		return nil, err
 
 	}

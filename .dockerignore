@@ -1,0 +1,31 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Docker (keep entrypoint.sh, exclude Dockerfiles)
+docker/*.Dockerfile
+docker-compose.yml
+
+# Ansible
+ansible/
+
+# Frontend node_modules (will be installed in container)
+frontend/node_modules/
+frontend/.next/
+
+# Env files
+.env
+
+# Keep go.mod (explicitly not ignored)
+!go.mod

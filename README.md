@@ -13,55 +13,65 @@ detailed reporting.
 
 ## Installation
 
-We recommend using Ansible for setting up a basic Email Specter instance. You can find the Ansible playbook in the [ansible](https://github.com/maileroo/email-specter/tree/main/ansible) directory and has been tested with Ubuntu 24.04 LTS.
+### Docker
 
-First, clone the repository:
+The easiest way to run Email Specter is with Docker Compose:
 
-```
+```bash
 git clone https://github.com/maileroo/email-specter.git
+cd email-specter
+cp .env.example .env
+docker-compose up -d
 ```
 
-Next, install Ansible and the required dependencies:
+Access Email Specter at `http://localhost/` (or your server's IP).
 
-```
-apt install ansible git -y;
-ansible-galaxy install trfore.mongodb_install;
+### Ansible
+
+If you prefer a non-container solution, use Ansible. The playbook has been tested with Ubuntu 24.04 LTS.
+
+```bash
+git clone https://github.com/maileroo/email-specter.git
+apt install ansible git -y
+ansible-galaxy install trfore.mongodb_install
 ```
 
-Then, fill out the inventory file with the required details. Generally, you will need to set the following variables:
+Edit the inventory file and set your public IP:
 
 ```
 public_ip: "127.0.0.1"
 ```
 
-Specify the public IP address of your server where Email Specter will be hosted and accessed from.
+Run the playbook:
 
-Finally, run the Ansible playbook to set up Email Specter:
-
-```
-cd email-specter/ansible/scripts;
-chmod +x run.sh;
-./run.sh;
+```bash
+cd email-specter/ansible/scripts
+chmod +x run.sh
+./run.sh
 ```
 
-This will install all necessary dependencies, configure Email Specter, and start the service.
+Access Email Specter at `http://<public_ip>/`.
 
-After the playbook is complete, you can access Email Specter at <em>http://{{ public_ip }}/</em>.
+### Manual
 
-If you are looking to setup Email Specter manually, you can follow the steps below:
-
-1. Install the required dependencies: 
-   1. MongoDB 4.0 or above
-   2. Node.js 22
-   3. Go 1.24
-2. Clone the GitHub repository
-3. Populate the .env file with the required environment variables (checkout ansible/templates/backend.env.j2 for a template)
-4. Run the following commands to build and start Email Specter (using Go).
-5. Go to `frontend` directory and run `npm install` to install the frontend dependencies.
-6. Run `npm run build` to build the frontend.
-7. Run `npm run start` to start the frontend server.
-8. Go to the base directory and run `go build .` to build the backend executable.
-9. Run `./email-specter` to start the backend server.
+1. Install dependencies:
+   - MongoDB 4.0+
+   - Node.js 22
+   - Go 1.24
+2. Clone the repository
+3. Copy `.env.example` to `.env` and configure
+4. Build and run the backend:
+   ```bash
+   go build .
+   ./email-specter
+   ```
+5. Build and run the frontend:
+   ```bash
+   cd frontend
+   npm install
+   npm run build
+   npm run start
+   ```
 
 ## Usage
 

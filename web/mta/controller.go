@@ -7,7 +7,8 @@ import (
 
 func GetAllMTAs(c *fiber.Ctx) error {
 
-	response := getAllMTAs()
+	baseUrl := getBaseUrl(c)
+	response := getAllMTAs(baseUrl)
 
 	return c.JSON(response)
 
@@ -28,7 +29,8 @@ func AddMTA(c *fiber.Ctx) error {
 
 	}
 
-	response := addMTA(request.Name)
+	baseUrl := getBaseUrl(c)
+	response := addMTA(request.Name, baseUrl)
 
 	return c.JSON(response)
 
@@ -73,5 +75,14 @@ func RotateSecretToken(c *fiber.Ctx) error {
 	response := rotateSecretToken(mtaID)
 
 	return c.JSON(response)
+
+}
+
+func getBaseUrl(c *fiber.Ctx) string {
+
+	protocol := c.Protocol()
+	host := c.Hostname()
+
+	return protocol + "://" + host + "/"
 
 }

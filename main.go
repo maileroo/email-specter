@@ -10,13 +10,14 @@ import (
 	"email-specter/web/middleware"
 	"email-specter/web/mta"
 	"email-specter/web/webhook"
-	"github.com/go-co-op/gocron/v2"
-	"github.com/gofiber/fiber/v2"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/go-co-op/gocron/v2"
+	"github.com/gofiber/fiber/v2"
 )
 
 const maxBodySize = 5 * 1024 * 1024 * 1024
@@ -71,6 +72,7 @@ func runWebserver(shutdownCtx context.Context) {
 	api.Post("/mta/:id/rotate-secret-token", middleware.OnlyAuthenticatedUsers, mta.RotateSecretToken)
 
 	api.Post("/webhook/:id/:token", webhook.ProcessWebhook)
+	api.Post("/batch-webhook/:id/:token", webhook.ProcessBatchWebhook)
 
 	api.Get("/reports/aggregated-data", middleware.OnlyAuthenticatedUsers, data.GetAggregatedData)
 	api.Post("/reports/generate", middleware.OnlyAuthenticatedUsers, data.GenerateReport)

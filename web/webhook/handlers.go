@@ -2,6 +2,8 @@ package webhook
 
 import (
 	"email-specter/model"
+	"log"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -12,28 +14,29 @@ import (
 // A message with multiple recipients will generate multiple reception events, one for each recipient with a unique Kumo Message ID.
 func handleReceptionEvent(mtaId primitive.ObjectID, webhookData model.WebhookEvent) bool {
 
+	eventTime := time.Unix(webhookData.Timestamp, 0)
 	currentTime := time.Now()
 
-	events := []model.Event{
-		{
-			Type:     webhookData.Type,
-			Content:  "",
-			Datetime: currentTime,
-		},
+	event := model.Event{
+		Type:     webhookData.Type,
+		Content:  "",
+		Datetime: eventTime,
 	}
 
-	message := createMessageObject(mtaId, currentTime, webhookData)
-	message.Events = events
-
-	err := message.Insert()
+	message, err := getOrCreateMessage(mtaId, webhookData, currentTime)
 
 	if err != nil {
+		log.Printf("[Reception] FAILED getOrCreateMessage: ID=%s, Error=%v", webhookData.ID, err)
 		return false
 	}
 
-	go upsertAggregatedEvent(mtaId, message, currentTime)
+	result := updateMessageStatus(webhookData, message, event, webhookData.Type, currentTime)
 
-	return true
+	if !result {
+		log.Printf("[Reception] FAILED updateMessageStatus: ID=%s", webhookData.ID)
+	}
+
+	return result
 
 }
 
@@ -42,21 +45,29 @@ func handleReceptionEvent(mtaId primitive.ObjectID, webhookData model.WebhookEve
 // A message can only have one hard bounce event.
 func handleBounceEvent(mtaId primitive.ObjectID, webhookData model.WebhookEvent) bool {
 
+	eventTime := time.Unix(webhookData.Timestamp, 0)
 	currentTime := time.Now()
 
 	event := model.Event{
 		Type:     webhookData.Type,
 		Content:  webhookData.Response.Content,
-		Datetime: currentTime,
+		Datetime: eventTime,
 	}
 
 	message, err := getOrCreateMessage(mtaId, webhookData, currentTime)
 
 	if err != nil {
+		log.Printf("[Bounce] FAILED getOrCreateMessage: ID=%s, Error=%v", webhookData.ID, err)
 		return false
 	}
 
-	return updateMessageStatus(webhookData, message, event, webhookData.Type, currentTime)
+	result := updateMessageStatus(webhookData, message, event, webhookData.Type, currentTime)
+
+	if !result {
+		log.Printf("[Bounce] FAILED updateMessageStatus: ID=%s", webhookData.ID)
+	}
+
+	return result
 
 }
 
@@ -66,21 +77,29 @@ func handleBounceEvent(mtaId primitive.ObjectID, webhookData model.WebhookEvent)
 // A message can have *many* transient failure events.
 func handleTransientFailureEvent(mtaId primitive.ObjectID, webhookData model.WebhookEvent) bool {
 
+	eventTime := time.Unix(webhookData.Timestamp, 0)
 	currentTime := time.Now()
 
 	event := model.Event{
 		Type:     webhookData.Type,
 		Content:  webhookData.Response.Content,
-		Datetime: currentTime,
+		Datetime: eventTime,
 	}
 
 	message, err := getOrCreateMessage(mtaId, webhookData, currentTime)
 
 	if err != nil {
+		log.Printf("[TransientFailure] FAILED getOrCreateMessage: ID=%s, Error=%v", webhookData.ID, err)
 		return false
 	}
 
-	return updateMessageStatus(webhookData, message, event, webhookData.Type, currentTime)
+	result := updateMessageStatus(webhookData, message, event, webhookData.Type, currentTime)
+
+	if !result {
+		log.Printf("[TransientFailure] FAILED updateMessageStatus: ID=%s", webhookData.ID)
+	}
+
+	return result
 
 }
 
@@ -88,20 +107,28 @@ func handleTransientFailureEvent(mtaId primitive.ObjectID, webhookData model.Web
 // A message will always have one delivery event.
 func handleDeliveryEvent(mtaId primitive.ObjectID, webhookData model.WebhookEvent) bool {
 
+	eventTime := time.Unix(webhookData.Timestamp, 0)
 	currentTime := time.Now()
 
 	event := model.Event{
 		Type:     webhookData.Type,
 		Content:  webhookData.Response.Content,
-		Datetime: currentTime,
+		Datetime: eventTime,
 	}
 
 	message, err := getOrCreateMessage(mtaId, webhookData, currentTime)
 
 	if err != nil {
+		log.Printf("[Delivery] FAILED getOrCreateMessage: ID=%s, Error=%v", webhookData.ID, err)
 		return false
 	}
 
-	return updateMessageStatus(webhookData, message, event, webhookData.Type, currentTime)
+	result := updateMessageStatus(webhookData, message, event, webhookData.Type, currentTime)
+
+	if !result {
+		log.Printf("[Delivery] FAILED updateMessageStatus: ID=%s", webhookData.ID)
+	}
+
+	return result
 
 }

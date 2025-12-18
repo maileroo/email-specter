@@ -243,54 +243,52 @@
     "regex": "(^|\\.)messagingengine\\.com",
     "name": "FastMail"
   },
-  [
-    {
-      "regex": "(^|\\.)startmail\\.com",
-      "name": "StartMail"
-    },
-    {
-      "regex": "(^|\\.)runbox\\.com",
-      "name": "Runbox"
-    },
-    {
-      "regex": "(^|\\.)mailinator\\.com",
-      "name": "Mailinator"
-    },
-    {
-      "regex": "(^|\\.)mailbox\\.org",
-      "name": "Mailbox.org"
-    },
-    {
-      "regex": "(^|\\.)atomicmail\\.io",
-      "name": "Atomic Mail"
-    },
-    {
-      "regex": "(^|\\.)tiscali\\.it",
-      "name": "Tiscali"
-    },
-    {
-      "regex": "(^|\\.)atmailcloud\\.com",
-      "name": "Atmail (Email Cloud)"
-    },
-    {
-      "regex": "(^|\\.)ionos\\.[a-z]{2,}$",
-      "name": "IONOS"
-    },
-    {
-      "regex": "(^|\\.)jellyfish\\.systems",
-      "name": "Jellyfish (Namecheap)"
-    },
-    {
-      "regex": "(^|\\.)improvmx\\.com$",
-      "name": "ImprovMX"
-    },
-    {
-      "regex": "(^|\\.)mxroute\\.com$",
-      "name": "MXRoute"
-    },
-    {
-      "regex": "(^|\\.)emailsrvr\\.com$",
-      "name": "Rackspace Email Hosting"
-    }
-  ]
+  {
+    "regex": "(^|\\.)startmail\\.com",
+    "name": "StartMail"
+  },
+  {
+    "regex": "(^|\\.)runbox\\.com",
+    "name": "Runbox"
+  },
+  {
+    "regex": "(^|\\.)mailinator\\.com",
+    "name": "Mailinator"
+  },
+  {
+    "regex": "(^|\\.)mailbox\\.org",
+    "name": "Mailbox.org"
+  },
+  {
+    "regex": "(^|\\.)atomicmail\\.io",
+    "name": "Atomic Mail"
+  },
+  {
+    "regex": "(^|\\.)tiscali\\.it",
+    "name": "Tiscali"
+  },
+  {
+    "regex": "(^|\\.)atmailcloud\\.com",
+    "name": "Atmail (Email Cloud)"
+  },
+  {
+    "regex": "(^|\\.)ionos\\.[a-z]{2,}$",
+    "name": "IONOS"
+  },
+  {
+    "regex": "(^|\\.)jellyfish\\.systems",
+    "name": "Jellyfish (Namecheap)"
+  },
+  {
+    "regex": "(^|\\.)improvmx\\.com$",
+    "name": "ImprovMX"
+  },
+  {
+    "regex": "(^|\\.)mxroute\\.com$",
+    "name": "MXRoute"
+  },
+  {
+    "regex": "(^|\\.)emailsrvr\\.com$",
+    "name": "Rackspace Email Hosting"
+  }
 ]

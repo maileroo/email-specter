@@ -50,9 +50,9 @@ export default function EventsModal({showModal, selectedMessage, onClose}) {
     if (!showModal) return null;
 
     return (
-        <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+        <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(0,0,0,0.5)'}} onClick={onClose}>
 
-            <div className="modal-dialog modal-xl">
+            <div className="modal-dialog modal-xl" onClick={(e) => e.stopPropagation()}>
 
                 <div className="modal-content">
 

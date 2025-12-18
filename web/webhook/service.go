@@ -3,6 +3,8 @@ package webhook
 import (
 	"crypto/subtle"
 	"email-specter/model"
+	"log"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -33,6 +35,7 @@ func processWebhook(mtaId string, webhookData model.WebhookEvent) bool {
 	mtaIdObject, err := primitive.ObjectIDFromHex(mtaId)
 
 	if err != nil {
+		log.Printf("[Webhook] Invalid MTA ID: %s, Error=%v", mtaId, err)
 		return false
 	}
 
@@ -50,8 +53,10 @@ func processWebhook(mtaId string, webhookData model.WebhookEvent) bool {
 	case "Bounce":
 		return handleBounceEvent(mtaIdObject, webhookData)
 
-	}
+	default:
+		log.Printf("[Webhook] UNKNOWN event type: Type=%s, ID=%s", webhookData.Type, webhookData.ID)
+		return false
 
-	return false
+	}
 
 }

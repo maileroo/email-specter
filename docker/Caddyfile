@@ -1,0 +1,27 @@
+# HTTP - always available on port 80, any hostname
+:80 {
+    handle /api/* {
+        reverse_proxy backend:8989
+    }
+    handle /webhook* {
+        reverse_proxy backend:8989
+    }
+    handle {
+        reverse_proxy frontend:3000
+    }
+}
+
+# === HTTPS SETUP ===
+# To enable HTTPS, uncomment below and replace example.com with your domain:
+#
+# example.com {
+#     handle /api/* {
+#         reverse_proxy backend:8989
+#     }
+#     handle /webhook* {
+#         reverse_proxy backend:8989
+#     }
+#     handle {
+#         reverse_proxy frontend:3000
+#     }
+# }
