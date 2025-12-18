@@ -59,7 +59,20 @@ func updateMessageStatus(webhookData model.WebhookEvent, message *model.Message,
 		return false
 	}
 
-	go upsertAggregatedEvent(message.MtaId, message, currentTime)
+	// Only count TransientFailure once per message (not per retry)
+	shouldAggregate := true
+	if status == "TransientFailure" {
+		for _, e := range message.Events {
+			if e.Type == "TransientFailure" && e.Datetime != event.Datetime {
+				shouldAggregate = false
+				break
+			}
+		}
+	}
+
+	if shouldAggregate {
+		go upsertAggregatedEvent(message.MtaId, message, currentTime)
+	}
 
 	return true
 
